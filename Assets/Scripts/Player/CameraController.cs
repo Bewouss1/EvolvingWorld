@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public Transform target;
+    [SerializeField] Transform target;
 
-    public float smoothSpeed = 8f;
-    public Vector3 offset;
+    [SerializeField] float smoothSpeed = 8f;
+    [SerializeField] Vector3 offset;
 
     void Start()
     {
@@ -15,7 +15,7 @@ public class CameraController : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(-offset);
     }
 
-    void Update()
+    void LateUpdate()
     {
         if(target == null) return;
 
