@@ -5,9 +5,12 @@ using UnityEngine.AI;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] ParticleSystem clickEffect;
-    [SerializeField] LayerMask clickableLayers;
-    [SerializeField] LayerMask interactableLayers;
+    [SerializeField] private ParticleSystem clickEffect;
+    [SerializeField] private LayerMask clickableLayers;
+    [SerializeField] private LayerMask interactableLayers;
+
+    [Header("UI")]
+    [SerializeField] private InventoryUI inventoryUI;
 
     float lookRotationSpeed = 8f;
 
@@ -46,6 +49,7 @@ public class PlayerController : MonoBehaviour
     void ClickToMove()
     {
         if (DialogueManager.Instance != null && DialogueManager.Instance.IsOpen) return;
+        if (inventoryUI != null && inventoryUI.IsOpen) return;
 
         RaycastHit hit;
         Vector2 mousePos = Mouse.current.position.ReadValue();
