@@ -87,11 +87,14 @@ public class MerchantUI : MonoBehaviour
             int index = i;
             MerchantOffer offer = currentData.forSale[i];
             int stock = currentMerchant.GetStock(i);
-            bool canDo = stock > 0 && playerInventory.Gold >= offer.item.buyPrice;
+            int price = WorldEventManager.Instance != null
+                ? WorldEventManager.Instance.GetModifiedPrice(offer.item, true)
+                : offer.item.buyPrice;
+            bool canDo = stock > 0 && playerInventory.Gold >= price;
 
             var slotObj = Instantiate(merchantSlotPrefab, slotsContainer);
             slotObj.GetComponent<MerchantSlotUI>().SetupBuy(
-                offer.item, stock, goldSprite, canDo, () => OnBuy(index));
+                offer.item, stock, price, goldSprite, canDo, () => OnBuy(index));
         }
     }
 
@@ -99,10 +102,13 @@ public class MerchantUI : MonoBehaviour
     {
         foreach (ItemData item in currentData.wantsToBuy)
         {
-            bool playerHas = playerInventory.CountItem(item) > 0;
+            int count = playerInventory.CountItem(item);
+            int price = WorldEventManager.Instance != null
+                ? WorldEventManager.Instance.GetModifiedPrice(item, false)
+                : item.sellPrice;
             var slotObj = Instantiate(merchantSlotPrefab, slotsContainer);
             slotObj.GetComponent<MerchantSlotUI>().SetupSell(
-                item, goldSprite, playerHas, () => OnSell(item));
+                item, count, price, goldSprite, count > 0, () => OnSell(item));
         }
     }
 
@@ -110,13 +116,18 @@ public class MerchantUI : MonoBehaviour
     {
         MerchantOffer offer = currentData.forSale[offerIndex];
         if (currentMerchant.GetStock(offerIndex) <= 0) return;
-        if (!playerInventory.SpendGold(offer.item.buyPrice)) return;
+
+        int price = WorldEventManager.Instance != null
+            ? WorldEventManager.Instance.GetModifiedPrice(offer.item, true)
+            : offer.item.buyPrice;
+
+        if (!playerInventory.SpendGold(price)) return;
 
         int leftover = playerInventory.AddItem(offer.item, 1);
         if (leftover > 0)
         {
             // Inventaire plein, remboursement
-            playerInventory.AddGold(offer.item.buyPrice);
+            playerInventory.AddGold(price);
             return;
         }
 
@@ -127,7 +138,12 @@ public class MerchantUI : MonoBehaviour
     void OnSell(ItemData item)
     {
         if (!playerInventory.RemoveItem(item, 1)) return;
-        playerInventory.AddGold(item.sellPrice);
+
+        int price = WorldEventManager.Instance != null
+            ? WorldEventManager.Instance.GetModifiedPrice(item, false)
+            : item.sellPrice;
+
+        playerInventory.AddGold(price);
         ShowTab(false);
     }
 

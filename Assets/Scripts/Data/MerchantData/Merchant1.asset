@@ -18,4 +18,4 @@ MonoBehaviour:
   - item: {fileID: 11400000, guid: 755c477309abf5d458477337bbc99a6a, type: 2}
     stock: 5
   wantsToBuy:
-  - {fileID: 11400000, guid: 755c477309abf5d458477337bbc99a6a, type: 2}
+  - {fileID: 11400000, guid: 122801da1bb5e3a4d9561f312b9ec091, type: 2}

@@ -13,10 +13,10 @@ public class MerchantSlotUI : MonoBehaviour
     [SerializeField] CanvasGroup canvasGroup;
 
     // Achat : joueur donne de l'or, reçoit l'item
-    public void SetupBuy(ItemData item, int stock, Sprite goldSprite, bool canDo, UnityAction onClick)
+    public void SetupBuy(ItemData item, int stock, int price, Sprite goldSprite, bool canDo, UnityAction onClick)
     {
         leftIcon.sprite = goldSprite;
-        leftLabel.text = item.buyPrice.ToString();
+        leftLabel.text = price.ToString();
 
         rightIcon.sprite = item.icon;
         rightLabel.text = stock > 0 ? $"{item.itemName}  x{stock}" : $"{item.itemName}  (Épuisé)";
@@ -27,13 +27,13 @@ public class MerchantSlotUI : MonoBehaviour
     }
 
     // Vente : joueur donne l'item, reçoit de l'or
-    public void SetupSell(ItemData item, Sprite goldSprite, bool playerHas, UnityAction onClick)
+    public void SetupSell(ItemData item, int count, int price, Sprite goldSprite, bool playerHas, UnityAction onClick)
     {
         leftIcon.sprite = item.icon;
-        leftLabel.text = item.itemName;
+        leftLabel.text = count > 0 ? $"{item.itemName}  x{count}" : item.itemName;
 
         rightIcon.sprite = goldSprite;
-        rightLabel.text = item.sellPrice.ToString();
+        rightLabel.text = price.ToString();
 
         canvasGroup.alpha = playerHas ? 1f : 0.5f;
         canvasGroup.blocksRaycasts = playerHas;
