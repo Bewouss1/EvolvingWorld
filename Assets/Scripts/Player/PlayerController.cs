@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     NavMeshAgent agent;
 
     // Interaction
-    MonoBehaviour currentInteractable;
+    IInteractable currentInteractable;
     Transform interactableTarget;
 
     // === Lifecycle ===
@@ -50,6 +50,7 @@ public class PlayerController : MonoBehaviour
     {
         if (DialogueManager.Instance != null && DialogueManager.Instance.IsOpen) return;
         if (inventoryUI != null && inventoryUI.IsOpen) return;
+        if (MerchantUI.Instance != null && MerchantUI.Instance.IsOpen) return;
 
         RaycastHit hit;
         Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -60,7 +61,7 @@ public class PlayerController : MonoBehaviour
 
         if ((hitLayer & interactableLayers) != 0)
         {
-            currentInteractable = hit.collider.GetComponent<NPCInteractable>();
+            currentInteractable = hit.collider.GetComponent<IInteractable>();
             interactableTarget = hit.collider.transform;
             agent.destination = interactableTarget.position;
             return;
@@ -106,11 +107,10 @@ public class PlayerController : MonoBehaviour
         if (currentInteractable == null) return;
 
         float distance = Vector3.Distance(transform.position, interactableTarget.position);
-        NPCInteractable npc = currentInteractable as NPCInteractable;
-        if (npc != null && distance <= npc.InteractionDistance)
+        if (distance <= currentInteractable.InteractionDistance)
         {
             Stop();
-            npc.Interact();
+            currentInteractable.Interact();
             ClearInteractable();
         }
     }

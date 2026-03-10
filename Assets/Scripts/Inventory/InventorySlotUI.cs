@@ -53,9 +53,8 @@ public class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         var img = dragIcon.AddComponent<Image>();
         img.sprite = iconImage.sprite;
         img.raycastTarget = false;
-        img.SetNativeSize();
         var rect = dragIcon.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(50, 50);
+        rect.sizeDelta = iconImage.rectTransform.rect.size;
 
         // Rendre le slot semi-transparent
         iconImage.color = new Color(1, 1, 1, 0.3f);

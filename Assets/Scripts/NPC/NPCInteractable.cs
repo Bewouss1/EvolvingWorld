@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class NPCInteractable : MonoBehaviour
+public class NPCInteractable : MonoBehaviour, IInteractable
 {
     [SerializeField] float interactionDistance = 3f;
     [SerializeField] DialogueData dialogue;
