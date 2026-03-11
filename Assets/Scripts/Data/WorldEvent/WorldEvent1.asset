@@ -14,11 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldEventData
   eventName: MauvaiseRecoltePomme
   description: Le prix des pommes augmente
-  delay: 15
+  warningDelay: 15
+  activeDelay: 15
   duration: 60
   priceModifiers:
   - item: {fileID: 11400000, guid: 122801da1bb5e3a4d9561f312b9ec091, type: 2}
     buyMultiplier: 1.4
     sellMultiplier: 1.4
-  vfxPrefab: {fileID: 8857014665402802381, guid: e9d0de7ca57cc8a4f988cd65ae9d1f4e, type: 3}
-  affectedNpcRoles: 00000000

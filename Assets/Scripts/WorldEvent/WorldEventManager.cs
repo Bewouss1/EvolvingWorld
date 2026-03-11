@@ -11,11 +11,11 @@ public class WorldEventManager : MonoBehaviour
     [Header("Événements programmés au lancement")]
     [SerializeField] WorldEventData[] scheduledEvents;
 
-    // Événements actifs et leurs VFX instanciés
+    List<WorldEventData> warningEvents = new List<WorldEventData>();
     List<WorldEventData> activeEvents = new List<WorldEventData>();
-    Dictionary<WorldEventData, List<GameObject>> activeVfx = new Dictionary<WorldEventData, List<GameObject>>();
 
     public IReadOnlyList<WorldEventData> ActiveEvents => activeEvents;
+    public IReadOnlyList<WorldEventData> WarningEvents => warningEvents;
 
     public event Action OnEventsChanged;
 
@@ -27,7 +27,6 @@ public class WorldEventManager : MonoBehaviour
 
     void Start()
     {
-        // Lancer les événements configurés dans l'Inspector
         foreach (var evt in scheduledEvents)
         {
             if (evt != null)
@@ -36,7 +35,7 @@ public class WorldEventManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Programme un événement : attend le délai, l'active, puis le désactive après sa durée.
+    /// Programme un événement : avertissement → actif → fin.
     /// </summary>
     public void ScheduleEvent(WorldEventData eventData)
     {
@@ -45,13 +44,21 @@ public class WorldEventManager : MonoBehaviour
 
     IEnumerator EventRoutine(WorldEventData eventData)
     {
-        // Attendre le délai
-        if (eventData.delay > 0f)
-            yield return new WaitForSeconds(eventData.delay);
+        // Attendre avant la phase d'avertissement
+        if (eventData.warningDelay > 0f)
+            yield return new WaitForSeconds(eventData.warningDelay);
 
+        // Phase avertissement (indices visibles, prix inchangés)
+        StartWarning(eventData);
+
+        // Attendre avant l'activation des prix
+        if (eventData.activeDelay > 0f)
+            yield return new WaitForSeconds(eventData.activeDelay);
+
+        // Phase active (prix modifiés)
         ActivateEvent(eventData);
 
-        // Attendre la durée
+        // Attendre la durée de la phase active
         if (eventData.duration > 0f)
         {
             yield return new WaitForSeconds(eventData.duration);
@@ -59,24 +66,31 @@ public class WorldEventManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Active un événement immédiatement (sans passer par le timer).
-    /// </summary>
+    public void StartWarning(WorldEventData eventData)
+    {
+        if (warningEvents.Contains(eventData)) return;
+        warningEvents.Add(eventData);
+        OnEventsChanged?.Invoke();
+    }
+
     public void ActivateEvent(WorldEventData eventData)
     {
+        warningEvents.Remove(eventData);
         if (activeEvents.Contains(eventData)) return;
-
         activeEvents.Add(eventData);
-        SpawnVfx(eventData);
         OnEventsChanged?.Invoke();
     }
 
     public void DeactivateEvent(WorldEventData eventData)
     {
+        warningEvents.Remove(eventData);
         if (!activeEvents.Remove(eventData)) return;
-
-        DespawnVfx(eventData);
         OnEventsChanged?.Invoke();
+    }
+
+    public bool IsWarning(WorldEventData eventData)
+    {
+        return warningEvents.Contains(eventData);
     }
 
     public bool IsActive(WorldEventData eventData)
@@ -85,7 +99,7 @@ public class WorldEventManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Retourne le prix modifié d'un item en cumulant tous les événements actifs.
+    /// Retourne le prix modifié d'un item en cumulant les événements actifs (pas les avertissements).
     /// </summary>
     public int GetModifiedPrice(ItemData item, bool isBuy)
     {
@@ -102,43 +116,5 @@ public class WorldEventManager : MonoBehaviour
         }
 
         return Mathf.Max(1, Mathf.RoundToInt(basePrice * multiplier));
-    }
-
-    // === VFX ===
-
-    void SpawnVfx(WorldEventData eventData)
-    {
-        if (eventData.vfxPrefab == null || eventData.affectedNpcRoles == null) return;
-
-        var vfxList = new List<GameObject>();
-        var allNpcs = FindObjectsByType<NpcIdentity>(FindObjectsSortMode.None);
-
-        foreach (var npc in allNpcs)
-        {
-            foreach (NpcRole role in eventData.affectedNpcRoles)
-            {
-                if (npc.HasRole(role))
-                {
-                    var vfx = Instantiate(eventData.vfxPrefab, npc.transform);
-                    vfx.transform.localPosition = eventData.vfxOffset;
-                    vfxList.Add(vfx);
-                    break; // Un seul VFX par PNJ même s'il matche plusieurs rôles
-                }
-            }
-        }
-
-        activeVfx[eventData] = vfxList;
-    }
-
-    void DespawnVfx(WorldEventData eventData)
-    {
-        if (!activeVfx.TryGetValue(eventData, out var vfxList)) return;
-
-        foreach (var vfx in vfxList)
-        {
-            if (vfx != null) Destroy(vfx);
-        }
-
-        activeVfx.Remove(eventData);
     }
 }
