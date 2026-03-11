@@ -3,3 +3,11 @@ Temp/
 Obj/
 Build/
 Logs/
+.vscode/
+UserSettings/
+ProjectSettings/
+Packages/
+*.meta
+*.asset
+*.prefab
+*.unity
